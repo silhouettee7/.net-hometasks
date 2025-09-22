@@ -2,14 +2,27 @@ using RESTAuth.Domain.Models;
 
 namespace RESTAuth.Api.Utils;
 
-public class HttpResponseCreator
+public class HttpResponseConvertingUtil
 {
     public IResult CreateResponse<T>(Result<T> result)
     {
         if (result.IsSuccess)
         {
-            return Results.Ok(result.Value);
+            if (result.SuccessType is null)
+            {
+                return Results.Problem();
+            }
+            switch (result.SuccessType)
+            {
+                case SuccessType.Ok:
+                    return Results.Ok(result.Value);
+                case SuccessType.Created:
+                    return Results.Created();
+                case SuccessType.NoContent:
+                    return Results.NoContent();
+            }
         }
+
         return HandleError(result);
     }
     
@@ -17,7 +30,19 @@ public class HttpResponseCreator
     {
         if (result.IsSuccess)
         {
-            return Results.Ok();
+            if (result.SuccessType is null)
+            {
+                return Results.Problem();
+            }
+            switch (result.SuccessType)
+            {
+                case SuccessType.Ok:
+                    return Results.Ok(result);
+                case SuccessType.Created:
+                    return Results.Created();
+                case SuccessType.NoContent:
+                    return Results.NoContent();
+            }
         }
         return HandleError(result);
     }

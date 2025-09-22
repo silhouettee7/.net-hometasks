@@ -1,18 +1,41 @@
 namespace RESTAuth.Domain.Models;
 
-public class Result(bool isSuccess, Error? error = null)
+public class Result<T>: Result
 {
-    public bool IsSuccess { get; } = isSuccess;
-    public Error? Error { get; } = error;
+    public T? Value { get; }
+
+    private Result(bool isSuccess, Error error, T? value) : base(isSuccess, error)
+    {
+        Value = value;
+    }
     
-    public static Result Success() => new (true);
-    public static Result Failure(Error? error) => new (false, error);
+    private Result(bool isSuccess, SuccessType error, T? value) : base(isSuccess, error)
+    {
+        Value = value;
+    }
+    public static Result<T> Success(SuccessType successType, T value) =>
+        new(true, successType, value);
+    public static Result<T> Failure(Error error, T? value = default) => 
+        new(false, error, value);
 }
 
-public class Result<T>(bool isSuccess, Error? error = null, T? value = default) : Result(isSuccess, error)
+public class Result
 {
-    public T? Value { get; } = value;
-    
-    public static Result<T> Success(T value) => new (true, null, value);
-    public new static Result<T> Failure(Error? error) => new (false, error);
+    public bool IsSuccess { get; }
+    public Error? Error { get; }
+    public SuccessType? SuccessType { get; set; }
+
+    protected Result(bool isSuccess, Error error)
+    {
+        IsSuccess = isSuccess;
+        Error = error;
+    }
+
+    protected Result(bool isSuccess, SuccessType? successType)
+    {
+        IsSuccess = isSuccess;
+        SuccessType = successType;
+    }
+    public static Result Success(SuccessType successType) => new(true, successType);
+    public static Result Failure(Error error) => new(false, error);
 }

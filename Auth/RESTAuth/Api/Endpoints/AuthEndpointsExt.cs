@@ -15,12 +15,12 @@ public static class AuthEndpointsExt
         var group = app.MapGroup("/auth");
 
         group.MapPost("/login",
-                async (UserLoginDto dto, HttpContext context, IAuthService authService, HttpResponseCreator creator) =>
+                async (UserLoginDto dto, HttpContext context, IAuthService authService, HttpResponseConvertingUtil converter) =>
                 {
                     var result = await authService.Login(dto);
                     if (!result.IsSuccess)
                     {
-                        return creator.CreateResponse(result);
+                        return converter.CreateResponse(result);
                     }
 
                     var claims = new List<Claim>

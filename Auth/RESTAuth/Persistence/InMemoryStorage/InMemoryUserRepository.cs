@@ -14,7 +14,7 @@ public class InMemoryUserRepository: InMemoryRepository<User,Guid>, IUserReposit
             .Where(pair => pair.Value.CreatedDate >= startDate && pair.Value.CreatedDate <= endDate)
             .Select(pair => pair.Value)
             .ToList();
-        return Task.FromResult(Result<List<User>>.Success(users));
+        return Task.FromResult(Result<List<User>>.Success(SuccessType.Ok,users));
     }
 
     public Task<Result<List<User>>> GetUsersForPeriodByUpdatedDate(DateTime startDate, DateTime endDate)
@@ -23,7 +23,7 @@ public class InMemoryUserRepository: InMemoryRepository<User,Guid>, IUserReposit
             .Where(pair => pair.Value.UpdatedDate >= startDate && pair.Value.UpdatedDate <= endDate)
             .Select(pair => pair.Value)
             .ToList();
-        return Task.FromResult(Result<List<User>>.Success(users));
+        return Task.FromResult(Result<List<User>>.Success(SuccessType.Ok,users));
     }
 
     public Task<Result<User>> GetUserByEmail(string email)
@@ -33,6 +33,6 @@ public class InMemoryUserRepository: InMemoryRepository<User,Guid>, IUserReposit
         {
             return Task.FromResult(Result<User>.Failure(new Error(ErrorType.NotFound,"User not found")));
         }
-        return Task.FromResult(Result<User>.Success(user));
+        return Task.FromResult(Result<User>.Success(SuccessType.Ok,user));
     }
 }

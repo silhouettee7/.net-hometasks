@@ -38,7 +38,7 @@ public static class ServiceCollectionExt
 
     public static IServiceCollection AddUtils(this IServiceCollection services)
     {
-        services.AddSingleton<HttpResponseCreator>();
+        services.AddSingleton<HttpResponseConvertingUtil>();
         return services;
     }
 }

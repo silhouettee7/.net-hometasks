@@ -16,7 +16,7 @@ public class InMemoryRepository<TEntity, TId>: IRepository<TEntity, TId>
         var success = _data.TryAdd(entity.Id, entity);
         if (success)
         {
-            return Task.FromResult(Result.Success());
+            return Task.FromResult(Result.Success(SuccessType.Created));
         }
         return Task.FromResult(Result.Failure(new Error(ErrorType.ServerError, "Unable to create new entity")));
     }
@@ -28,7 +28,7 @@ public class InMemoryRepository<TEntity, TId>: IRepository<TEntity, TId>
             return Task.FromResult(Result.Failure(new Error(ErrorType.NotFound, "Entity not found")));
         }
         _data[entity.Id] = entity;
-        return Task.FromResult(Result.Success());
+        return Task.FromResult(Result.Success(SuccessType.NoContent));
     }
 
     public Task<Result> Delete(TId id)
@@ -36,7 +36,7 @@ public class InMemoryRepository<TEntity, TId>: IRepository<TEntity, TId>
         var success = _data.TryRemove(id, out var obj);
         if (success)
         {
-            return Task.FromResult(Result.Success());
+            return Task.FromResult(Result.Success(SuccessType.NoContent));
         }
         if (obj is null)
         {
@@ -52,6 +52,6 @@ public class InMemoryRepository<TEntity, TId>: IRepository<TEntity, TId>
         {
             return Task.FromResult(Result<TEntity>.Failure(new Error(ErrorType.NotFound, "Entity not found")));
         }
-        return Task.FromResult(Result<TEntity>.Success(entity!));
+        return Task.FromResult(Result<TEntity>.Success(SuccessType.Ok,entity!));
     }
 }

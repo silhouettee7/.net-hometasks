@@ -75,7 +75,7 @@ public class UserService(IUserRepository userRepository, IConfiguration configur
                 Role = u.Role
             })
             .ToList();
-        return Result<List<UserDtoResponse>>.Success(users);
+        return Result<List<UserDtoResponse>>.Success(SuccessType.Ok,users);
     }
 
     public async Task<Result<List<UserDtoResponse>>> GetUsersForPeriodByUpdatingDate(DateTime startDate, DateTime endDate)
@@ -95,6 +95,6 @@ public class UserService(IUserRepository userRepository, IConfiguration configur
                 Role = u.Role
             })
             .ToList();
-        return Result<List<UserDtoResponse>>.Success(users);
+        return Result<List<UserDtoResponse>>.Success(SuccessType.Ok,users);
     }
 }
