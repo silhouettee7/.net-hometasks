@@ -27,10 +27,24 @@ public static class ServiceCollectionExt
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
-                options.LoginPath = "/api/auth/login";
+                options.LoginPath = "/api/v1/auth/login";
+                options.AccessDeniedPath = "/api/v1/auth/login";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.StatusCode = 403;
+                        return Task.CompletedTask;
+                    },
+                    OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    },
+                };
             }); 
         services.AddAuthorization();
         return services;

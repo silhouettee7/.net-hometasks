@@ -16,7 +16,7 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
-var group = app.MapGroup("/api/v1");
+var group = app.MapGroup("/api/v1/");
 group.MapUsersEndpoints();
 group.MapAuthEndpoints();
 

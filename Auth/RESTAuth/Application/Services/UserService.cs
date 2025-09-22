@@ -12,6 +12,11 @@ public class UserService(IUserRepository userRepository, IConfiguration configur
     {
         try
         {
+            var possibleUserResult = await userRepository.GetUserByEmail(dto.Email);
+            if (possibleUserResult.IsSuccess)
+            {
+                return Result.Failure(new Error(ErrorType.BadRequest, "User already exists"));
+            }
             var user = new User
             {
                 Id = Guid.NewGuid(),
