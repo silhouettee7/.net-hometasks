@@ -5,6 +5,7 @@ using RESTAuth.Api.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddStorage();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 builder.Services.AddUtils();

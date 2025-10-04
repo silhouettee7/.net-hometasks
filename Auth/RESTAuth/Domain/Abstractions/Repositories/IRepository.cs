@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using RESTAuth.Domain.Entities;
 using RESTAuth.Domain.Models;
 

@@ -3,6 +3,7 @@ using RESTAuth.Api.Utils;
 using RESTAuth.Application.Services;
 using RESTAuth.Domain.Abstractions.Repositories;
 using RESTAuth.Domain.Abstractions.Services;
+using RESTAuth.Domain.Entities;
 using RESTAuth.Persistence.InMemoryStorage;
 
 namespace RESTAuth.Api.Extensions;
@@ -13,15 +14,21 @@ public static class ServiceCollectionExt
     {
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ICursorPaginationService<User, Guid>, CursorPaginationService<User, Guid>>();
         return services;
     }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+        services.AddScoped<IUserRepository, InMemoryUserRepository>();
+        services.AddScoped<IQueryBuilder<User, Guid>, InMemoryQueryBuilder<User, Guid>>();
         return services;
     }
 
+    public static IServiceCollection AddStorage(this IServiceCollection services)
+    {
+        return services.AddSingleton<LocalStorage<User, Guid>>();
+    }
     public static IServiceCollection AddAuth(this IServiceCollection services)
     {
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

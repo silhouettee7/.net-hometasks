@@ -5,25 +5,27 @@ using RESTAuth.Domain.Models;
 
 namespace RESTAuth.Persistence.InMemoryStorage;
 
-public class InMemoryUserRepository: InMemoryRepository<User,Guid>, IUserRepository
+public class InMemoryUserRepository(LocalStorage<User, Guid> storage) : InMemoryRepository<User,Guid>(storage), IUserRepository
 {
     private ConcurrentDictionary<Guid, User> _users => _data;
-    public Task<Result<List<User>>> GetUsersForPeriodByRegistrationDate(DateTime startDate, DateTime endDate)
-    {
-        var users = _users
-            .Where(pair => pair.Value.CreatedDate >= startDate && pair.Value.CreatedDate <= endDate)
-            .Select(pair => pair.Value)
-            .ToList();
-        return Task.FromResult(Result<List<User>>.Success(SuccessType.Ok,users));
-    }
 
-    public Task<Result<List<User>>> GetUsersForPeriodByUpdatedDate(DateTime startDate, DateTime endDate)
+    public Task<Result<Dictionary<string, decimal>>> GetUserAverageSalariesByDepartment()
     {
-        var users = _users
-            .Where(pair => pair.Value.UpdatedDate >= startDate && pair.Value.UpdatedDate <= endDate)
-            .Select(pair => pair.Value)
-            .ToList();
-        return Task.FromResult(Result<List<User>>.Success(SuccessType.Ok,users));
+        try
+        {
+            var result = _users
+                .Select(pair => pair.Value)
+                .GroupBy(u => u.Department)
+                .ToDictionary(group => group.Key,
+                    group => group.Average(u => u.Salary));
+            return Task.FromResult(
+                Result<Dictionary<string, decimal>>.Success(SuccessType.Ok, result));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(
+                Result<Dictionary<string, decimal>>.Failure(new Error(ErrorType.ServerError, ex.Message)));
+        }
     }
 
     public Task<Result<User>> GetUserByEmail(string email)

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using RESTAuth.Api.Enums;
 using RESTAuth.Api.Filters;
+using RESTAuth.Api.Models;
 using RESTAuth.Api.Utils;
 using RESTAuth.Domain.Abstractions.Services;
 using RESTAuth.Domain.Dtos;
@@ -41,22 +42,28 @@ public static class UserEndpointsExt
             })
             .RequireAuthorization();
         
-        group.MapGet("/",
-            async (DateTime from, DateTime to, UserDateOption option, HttpResponseConvertingUtil converter,
-                IUserService userService) =>
+        group.MapPost("/",
+            async (UsersPageWithPeriodDateDto dto, HttpResponseConvertingUtil converter, IUserService userService) =>
             {
-                switch (option)
+                switch (dto.Option)
                 {
                     case UserDateOption.Registration:
-                        return converter.CreateResponse(await userService.GetUsersForPeriodByRegistrationDate(from, to));
+                        return converter.CreateResponse(
+                            await userService.GetUsersPageForPeriodByRegistrationDate(
+                                dto.CursorPaginationRequest, dto.From,dto.To));
                     case UserDateOption.Updating:
-                        return converter.CreateResponse(await userService.GetUsersForPeriodByUpdatingDate(from, to));
+                        return converter.CreateResponse(
+                            await userService.GetUsersPageForPeriodByUpdatingDate(
+                                dto.CursorPaginationRequest, dto.From, dto.To));
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(option), option, null);
+                        throw new ArgumentOutOfRangeException(nameof(dto.Option), dto.Option, null);
                 }
             })
             .RequireAuthorization(new AuthorizeAttribute{Roles = "Admin"});
-        
+
+        group.MapGet("/salaries",
+            async (IUserService userService, HttpResponseConvertingUtil converter) => 
+                converter.CreateResponse(await userService.GetUserDepartmentAverageSalaries()));
         
         return group;
     }

@@ -5,11 +5,11 @@ using RESTAuth.Domain.Models;
 
 namespace RESTAuth.Persistence.InMemoryStorage;
 
-public class InMemoryRepository<TEntity, TId>: IRepository<TEntity, TId> 
+public class InMemoryRepository<TEntity, TId>(LocalStorage<TEntity, TId> storage): IRepository<TEntity, TId> 
     where TEntity : Entity<TId> 
     where TId : struct
 {
-    protected readonly ConcurrentDictionary<TId, TEntity> _data = new();
+    protected ConcurrentDictionary<TId, TEntity> _data => storage.Data;
 
     public Task<Result> Add(TEntity entity)
     {
