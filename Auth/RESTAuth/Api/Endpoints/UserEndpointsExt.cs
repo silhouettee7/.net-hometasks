@@ -15,7 +15,7 @@ public static class UserEndpointsExt
     {
         var group = app.MapGroup("/users");
 
-        group.MapPost("/",
+        group.MapPost("/registration",
             async (UserDtoRequest userRegister, HttpResponseConvertingUtil converter, IUserService userService) =>
                 converter.CreateResponse(await userService.RegisterUser(userRegister)))
             .AddEndpointFilter<ValidationFilter<UserDtoRequest>>();
@@ -45,19 +45,16 @@ public static class UserEndpointsExt
         group.MapPost("/",
             async (UsersPageWithPeriodDateDto dto, HttpResponseConvertingUtil converter, IUserService userService) =>
             {
-                switch (dto.Option)
+                return dto.Option switch
                 {
-                    case UserDateOption.Registration:
-                        return converter.CreateResponse(
-                            await userService.GetUsersPageForPeriodByRegistrationDate(
-                                dto.CursorPaginationRequest, dto.From,dto.To));
-                    case UserDateOption.Updating:
-                        return converter.CreateResponse(
-                            await userService.GetUsersPageForPeriodByUpdatingDate(
-                                dto.CursorPaginationRequest, dto.From, dto.To));
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(dto.Option), dto.Option, null);
-                }
+                    UserDateOption.Registration => converter.CreateResponse(
+                        await userService.GetUsersPageForPeriodByRegistrationDate(dto.CursorPaginationRequest, dto.From,
+                            dto.To)),
+                    UserDateOption.Updating => converter.CreateResponse(
+                        await userService.GetUsersPageForPeriodByUpdatingDate(dto.CursorPaginationRequest, dto.From,
+                            dto.To)),
+                    _ => throw new ArgumentOutOfRangeException(nameof(dto.Option), dto.Option, null)
+                };
             })
             .RequireAuthorization(new AuthorizeAttribute{Roles = "Admin"});
 

@@ -15,21 +15,49 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
     public async Task<Result<CursorPaginationResponse<TEntity>>> GetPageAsync(IQueryBuilder<TEntity,TId> queryBuilder, CursorPaginationRequest request)
     {
         return request.Cursor == null 
-            ? GetCursorPaginationResponse(await HandleFirstPage(request, queryBuilder)) 
-            : GetCursorPaginationResponse(await HandlePage(request, queryBuilder));
+            ? await HandleFirstPage(request, queryBuilder)
+            : await HandleOtherPage(request, queryBuilder);
     }
     
-    private async Task<Result<List<TEntity>>> HandleFirstPage(
+    private async Task<Result<CursorPaginationResponse<TEntity>>> HandleFirstPage(
         CursorPaginationRequest request, IQueryBuilder<TEntity,TId> queryBuilder)
     {
-        var result = await queryBuilder
-            .OrderBy(x => x.Id, true)
-            .Take(request.PageSize)
+        var dataResult = await queryBuilder
+            .OrderBy(x => x.Id, request.Forward)
+            .Take(request.PageSize+1)
             .ExecuteQuery();
-        return result;
+        if (!dataResult.IsSuccess)
+        {
+            return Result<CursorPaginationResponse<TEntity>>.Failure(dataResult.Error!);
+        }
+        var entities = dataResult.Value!;
+        var additionalElem = entities
+            .Skip(request.PageSize)
+            .FirstOrDefault();
+        var response = new CursorPaginationResponse<TEntity>
+        {
+            Items = additionalElem is null ? entities: entities
+                .Take(request.PageSize)
+                .ToList()
+        };
+        if (additionalElem is null)
+        {
+            return Result<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
+        }
+        if (request.Forward)
+        {
+            response.HasNext = true;
+            response.NextCursor = EncodeCursor(new Cursor {Id = additionalElem.Id});
+        }
+        else
+        {
+            response.HasPrevious = true;
+            response.PreviousCursor = EncodeCursor(new Cursor {Id = additionalElem.Id});
+        }
+        return Result<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
     }
 
-    private async Task<Result<List<TEntity>>> HandlePage(
+    private async Task<Result<CursorPaginationResponse<TEntity>>> HandleOtherPage(
         CursorPaginationRequest request, IQueryBuilder<TEntity,TId> queryBuilder)
     {
         queryBuilder.OrderBy(x => x.Id, true);
@@ -38,35 +66,46 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
         if (request.Forward)
         {
             queryBuilder
-                .Where(x => x.Id.CompareTo(id) > 0);
+                .Where(x => x.Id.CompareTo(id) >= 0);
         }
         else
         {
             queryBuilder
-                .Where(x => x.Id.CompareTo(id) < 0)
+                .Where(x => x.Id.CompareTo(id) <= 0)
                 .OrderBy(x => x.Id, false);
         }
-        return await queryBuilder
-            .Take(request.PageSize)
+        var dataResult = await queryBuilder
+            .Take(request.PageSize + 1)
             .ExecuteQuery();
-    }
-    private Result<CursorPaginationResponse<TEntity>> GetCursorPaginationResponse(Result<List<TEntity>> result)
-    {
-        if (!result.IsSuccess)
+        if (!dataResult.IsSuccess)
         {
-            return Result<CursorPaginationResponse<TEntity>>.Failure(result.Error!);
+            return Result<CursorPaginationResponse<TEntity>>.Failure(dataResult.Error!);
         }
-        var entities = result.Value!;
-        var firstElem = entities.FirstOrDefault();
-        var lastElem = entities.LastOrDefault();
+        var entities = dataResult.Value!;
+        var additionalElem = entities
+            .Skip(request.PageSize)
+            .FirstOrDefault();
         var response = new CursorPaginationResponse<TEntity>
         {
-            Items = entities,
-            NextCursor = firstElem is null ? null : EncodeCursor(new Cursor { Id = firstElem.Id }),
-            PreviousCursor = lastElem is null ? null : EncodeCursor(new Cursor { Id = lastElem.Id }),
-            HasNext = lastElem != null,
-            HasPrevious = firstElem != null
+            Items = additionalElem is null ? entities: entities
+                .Take(request.PageSize)
+                .ToList()
         };
+        if (request.Forward)
+        {
+            response.HasPrevious = true;
+            response.PreviousCursor = request.Cursor;
+            response.HasNext = additionalElem is not null;
+            response.NextCursor = response.HasNext ? EncodeCursor(new Cursor { Id = additionalElem!.Id }) : null;
+        }
+        else
+        {
+            response.HasNext = true;
+            response.NextCursor = request.Cursor;
+            response.HasPrevious = additionalElem is not null;
+            response.PreviousCursor = response.HasPrevious ? EncodeCursor(new Cursor { Id = additionalElem!.Id }) : null;
+        }
+
         return Result<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
     }
     
@@ -91,7 +130,7 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
         throw new InvalidCastException("No valid cursor found");
     }
 
-    private string? EncodeCursor(Cursor cursor)
+    private string EncodeCursor(Cursor cursor)
     {
         return Convert.ToBase64String(Encoding.UTF8.GetBytes(cursor.Id.ToString() ?? string.Empty));
     }

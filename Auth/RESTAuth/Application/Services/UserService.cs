@@ -28,7 +28,8 @@ public class UserService(
                 Email = dto.Email,
                 Password = dto.Password,
                 CreatedDate = DateTime.Now,
-                Role = dto.Email == configuration["AdminEmail"] ? "Admin" : "User"
+                Role = dto.Email == configuration["AdminEmail"] ? "Admin" : "User",
+                Department = dto.Department
             };
             var result = await userRepository.Add(user);
             return result;
