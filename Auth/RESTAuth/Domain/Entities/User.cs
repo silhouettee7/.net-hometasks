@@ -10,4 +10,6 @@ public class User: Entity<Guid>
     public string Role { get; set; }
     public decimal Salary { get; set; }
     public string Department { get; set; }
+    public UserProfile UserProfile { get; set; }
+    public List<UserAddress> UserAddresses { get; set; }
 }

@@ -4,6 +4,8 @@ using RESTAuth.Application.Services;
 using RESTAuth.Domain.Abstractions.Repositories;
 using RESTAuth.Domain.Abstractions.Services;
 using RESTAuth.Domain.Entities;
+using RESTAuth.Persistence.DataBase;
+using RESTAuth.Persistence.DataBase.Repositories;
 using RESTAuth.Persistence.InMemoryStorage;
 
 namespace RESTAuth.Api.Extensions;
@@ -20,14 +22,14 @@ public static class ServiceCollectionExt
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IUserRepository, InMemoryUserRepository>();
-        services.AddScoped<IQueryBuilder<User, Guid>, InMemoryQueryBuilder<User, Guid>>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IQueryBuilder<User, Guid>, QueryBuilder<User, Guid>>();
         return services;
     }
 
     public static IServiceCollection AddStorage(this IServiceCollection services)
     {
-        return services.AddSingleton<LocalStorage<User, Guid>>();
+        return services.AddDbContext<AppDbContext>();
     }
     public static IServiceCollection AddAuth(this IServiceCollection services)
     {

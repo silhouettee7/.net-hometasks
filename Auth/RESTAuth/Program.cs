@@ -1,6 +1,7 @@
 using FluentValidation;
 using RESTAuth.Api.Endpoints;
 using RESTAuth.Api.Extensions;
+using RESTAuth.Persistence.DataBase;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -17,7 +17,7 @@ public class UserService(
         try
         {
             var possibleUserResult = await userRepository.GetUserByEmail(dto.Email);
-            if (possibleUserResult.IsSuccess)
+            if (!possibleUserResult.IsSuccess)
             {
                 return Result.Failure(new Error(ErrorType.BadRequest, "User already exists"));
             }
@@ -27,7 +27,8 @@ public class UserService(
                 Name = dto.Name,
                 Email = dto.Email,
                 Password = dto.Password,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow,
                 Role = dto.Email == configuration["AdminEmail"] ? "Admin" : "User",
                 Department = dto.Department
             };
@@ -53,7 +54,7 @@ public class UserService(
             Id = id,
             Email = dto.Email,
             CreatedDate = oldUser.CreatedDate,
-            UpdatedDate = DateTime.Now,
+            UpdatedDate = DateTime.UtcNow,
             Password = dto.Password,
             Name = dto.Name,
             Role = oldUser.Role
@@ -71,6 +72,8 @@ public class UserService(
     public async Task<Result<CursorPaginationResponse<UserDtoResponse>>> GetUsersPageForPeriodByRegistrationDate(
         CursorPaginationRequest request, DateTime startDate, DateTime endDate)
     {
+        startDate = startDate.ToUniversalTime();
+        endDate = endDate.ToUniversalTime();
         queryBuilder.Where(u => u.CreatedDate >= startDate && u.CreatedDate <= endDate);
         var result = await paginationService.GetPageAsync(queryBuilder, request);
         return HandleUsersPaginationResult(result);
@@ -79,6 +82,8 @@ public class UserService(
     public async Task<Result<CursorPaginationResponse<UserDtoResponse>>> GetUsersPageForPeriodByUpdatingDate(
         CursorPaginationRequest request, DateTime startDate, DateTime endDate)
     {
+        startDate = startDate.ToUniversalTime();
+        endDate = endDate.ToUniversalTime();
         queryBuilder.Where(u => u.UpdatedDate >= startDate && u.UpdatedDate <= endDate);
         var result = await paginationService.GetPageAsync(queryBuilder, request);
         return HandleUsersPaginationResult(result);
