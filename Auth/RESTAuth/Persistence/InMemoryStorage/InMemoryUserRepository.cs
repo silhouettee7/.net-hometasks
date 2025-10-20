@@ -37,4 +37,9 @@ public class InMemoryUserRepository(LocalStorage<User, Guid> storage) : InMemory
         }
         return Task.FromResult(Result<User>.Success(SuccessType.Ok,user));
     }
+
+    public async Task CreateUsers(IEnumerable<User> users)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,10 +1,8 @@
 using FluentValidation;
 using RESTAuth.Api.Endpoints;
 using RESTAuth.Api.Extensions;
-using RESTAuth.Persistence.DataBase;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddStorage();
 builder.Services.AddServices();
@@ -12,6 +10,8 @@ builder.Services.AddRepositories();
 builder.Services.AddUtils();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddAuth();
+builder.Services.AddJobs();
+builder.Services.AddDataGenerators();
 
 var app = builder.Build();
 
@@ -23,3 +23,4 @@ group.MapUsersEndpoints();
 group.MapAuthEndpoints();
 
 app.Run();
+

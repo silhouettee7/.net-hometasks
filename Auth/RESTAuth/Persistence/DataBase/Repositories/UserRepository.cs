@@ -39,4 +39,10 @@ public class UserRepository(AppDbContext context) : Repository<User,Guid>(contex
             return Result<User>.Failure(new Error(ErrorType.ServerError, ex.Message));
         }
     }
+
+    public async Task CreateUsers(IEnumerable<User> users)
+    {
+        await context.Users.AddRangeAsync(users);
+        await context.SaveChangesAsync();
+    }
 }

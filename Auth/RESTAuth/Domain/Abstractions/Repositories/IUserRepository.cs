@@ -7,4 +7,5 @@ public interface IUserRepository: IRepository<User, Guid>
 {
     Task<Result<Dictionary<string,decimal>>> GetUserAverageSalariesByDepartment();
     Task<Result<User>> GetUserByEmail(string email);
+    Task CreateUsers(IEnumerable<User> users);
 }
