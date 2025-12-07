@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Quartz;
+using RESTAuth.Api.CustomSessionAuth;
 using RESTAuth.Api.Utils;
 using RESTAuth.Application.Generators;
 using RESTAuth.Application.Jobs;
@@ -36,8 +38,12 @@ public static class ServiceCollectionExt
     }
     public static IServiceCollection AddAuth(this IServiceCollection services)
     {
-        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(options =>
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,options =>
             {
                 options.LoginPath = "/api/v1/auth/login";
                 options.AccessDeniedPath = "/api/v1/auth/login";
@@ -57,7 +63,9 @@ public static class ServiceCollectionExt
                         return Task.CompletedTask;
                     },
                 };
-            }); 
+            })
+            .AddScheme<AuthenticationSchemeOptions, SessionTokenAuthenticationHandler>(
+                SessionTokenDefaults.AuthenticationScheme, _ => { });
         services.AddAuthorization();
         return services;
     }

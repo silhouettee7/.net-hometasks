@@ -10,7 +10,7 @@ builder.Services.AddRepositories();
 builder.Services.AddUtils();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddAuth();
-builder.Services.AddJobs();
+//builder.Services.AddJobs();
 builder.Services.AddDataGenerators();
 
 var app = builder.Build();

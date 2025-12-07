@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using RESTAuth.Api.CustomSessionAuth;
 using RESTAuth.Api.Enums;
 using RESTAuth.Api.Filters;
 using RESTAuth.Api.Models;
@@ -56,11 +57,20 @@ public static class UserEndpointsExt
                     _ => throw new ArgumentOutOfRangeException(nameof(dto.Option), dto.Option, null)
                 };
             })
-            .RequireAuthorization(new AuthorizeAttribute{Roles = "Admin"});
+            .RequireAuthorization(new AuthorizeAttribute
+            {
+                Roles = "Admin"
+            });
 
         group.MapGet("/salaries",
             async (IUserService userService, HttpResponseConvertingUtil converter) => 
-                converter.CreateResponse(await userService.GetUserDepartmentAverageSalaries()));
+                converter.CreateResponse(await userService.GetUserDepartmentAverageSalaries()))
+            .RequireAuthorization(new AuthorizeAttribute
+            {
+                Roles = "Admin", 
+                AuthenticationSchemes = SessionTokenDefaults.AuthenticationScheme
+            });
+
         
         return group;
     }
