@@ -5,8 +5,10 @@ using RESTAuth.Api.Enums;
 using RESTAuth.Api.Filters;
 using RESTAuth.Api.Models;
 using RESTAuth.Api.Utils;
+using RESTAuth.Application.Rabbit.Producers;
 using RESTAuth.Domain.Abstractions.Services;
 using RESTAuth.Domain.Dtos;
+using Shared.Rabbit.Models;
 
 namespace RESTAuth.Api.Endpoints;
 
@@ -67,10 +69,26 @@ public static class UserEndpointsExt
                 converter.CreateResponse(await userService.GetUserDepartmentAverageSalaries()))
             .RequireAuthorization(new AuthorizeAttribute
             {
-                Roles = "Admin", 
-                AuthenticationSchemes = SessionTokenDefaults.AuthenticationScheme
+                Roles = "Admin"
             });
 
+        group.MapPost("/telegram/report/create", async (HttpContext context, ReportQueueProducer producer) =>
+        {
+            long.TryParse(context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
+                out long telegramChatId);
+            var reportRequest = new ReportRequest
+            {
+                ReportId = Guid.NewGuid(),
+                TelegramChatId = telegramChatId,
+            };
+            await producer.EnqueueReportAsync(reportRequest);
+            return Results.Created();
+        })
+        .RequireAuthorization(new AuthorizeAttribute
+        {
+            Roles = "Admin",
+            AuthenticationSchemes = SessionTokenDefaults.AuthenticationScheme,
+        });
         
         return group;
     }

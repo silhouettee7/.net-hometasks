@@ -4,7 +4,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAuth", "ConsoleAuth\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTAuth", "RESTAuth\RESTAuth.csproj", "{4C3B1EB0-83A1-45D1-8138-DA82AC2C9841}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot", "TelegramBot\TelegramBot.csproj", "{D9D88D64-0763-4C43-8BC5-0B1B100301A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{07C3749B-B70C-446D-8452-E89F1685A469}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBotClient", "TelegramBotClient\TelegramBotClient.csproj", "{5E7D56D6-9C69-43D6-957E-21E638EADA6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution_items", "solution_items", "{3760D34D-CC5C-429E-AF75-93AC96C0A539}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yaml = docker-compose.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,9 +27,13 @@ Global
 		{4C3B1EB0-83A1-45D1-8138-DA82AC2C9841}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C3B1EB0-83A1-45D1-8138-DA82AC2C9841}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C3B1EB0-83A1-45D1-8138-DA82AC2C9841}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9D88D64-0763-4C43-8BC5-0B1B100301A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9D88D64-0763-4C43-8BC5-0B1B100301A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9D88D64-0763-4C43-8BC5-0B1B100301A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9D88D64-0763-4C43-8BC5-0B1B100301A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07C3749B-B70C-446D-8452-E89F1685A469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07C3749B-B70C-446D-8452-E89F1685A469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07C3749B-B70C-446D-8452-E89F1685A469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07C3749B-B70C-446D-8452-E89F1685A469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E7D56D6-9C69-43D6-957E-21E638EADA6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E7D56D6-9C69-43D6-957E-21E638EADA6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E7D56D6-9C69-43D6-957E-21E638EADA6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E7D56D6-9C69-43D6-957E-21E638EADA6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -4,18 +4,18 @@ namespace RESTAuth.Api.Utils;
 
 public class HttpResponseConvertingUtil
 {
-    public IResult CreateResponse<T>(Result<T> result)
+    public IResult CreateResponse<T>(AppResult<T> appResult)
     {
-        if (result.IsSuccess)
+        if (appResult.IsSuccess)
         {
-            if (result.SuccessType is null)
+            if (appResult.SuccessType is null)
             {
                 return Results.Problem();
             }
-            switch (result.SuccessType)
+            switch (appResult.SuccessType)
             {
                 case SuccessType.Ok:
-                    return Results.Ok(result.Value);
+                    return Results.Ok(appResult.Value);
                 case SuccessType.Created:
                     return Results.Created();
                 case SuccessType.NoContent:
@@ -23,44 +23,44 @@ public class HttpResponseConvertingUtil
             }
         }
 
-        return HandleError(result);
+        return HandleError(appResult);
     }
     
-    public IResult CreateResponse(Result result)
+    public IResult CreateResponse(AppResult appResult)
     {
-        if (result.IsSuccess)
+        if (appResult.IsSuccess)
         {
-            if (result.SuccessType is null)
+            if (appResult.SuccessType is null)
             {
                 return Results.Problem();
             }
-            switch (result.SuccessType)
+            switch (appResult.SuccessType)
             {
                 case SuccessType.Ok:
-                    return Results.Ok(result);
+                    return Results.Ok(appResult);
                 case SuccessType.Created:
                     return Results.Created();
                 case SuccessType.NoContent:
                     return Results.NoContent();
             }
         }
-        return HandleError(result);
+        return HandleError(appResult);
     }
 
-    private IResult HandleError(Result result)
+    private IResult HandleError(AppResult appResult)
     {
-        if (result.Error is null)
+        if (appResult.AppError is null)
         {
             return Results.Problem();
         }
-        switch (result.Error.ErrorType)
+        switch (appResult.AppError.ErrorType)
         {
             case ErrorType.BadRequest:
-                return Results.BadRequest(result.Error.Message);
+                return Results.BadRequest(appResult.AppError.Message);
             case ErrorType.NotFound:
-                return Results.NotFound(result.Error.Message);
+                return Results.NotFound(appResult.AppError.Message);
             case ErrorType.ServerError:
-                return Results.Problem(result.Error.Message);
+                return Results.Problem(appResult.AppError.Message);
             default:
                 return Results.Empty;
         }

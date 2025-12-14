@@ -36,16 +36,16 @@ public class QueryBuilder<TEntity, TId>(AppDbContext context): IQueryBuilder<TEn
         return this;
     }
 
-    public async Task<Result<List<TEntity>>> ExecuteQuery()
+    public async Task<AppResult<List<TEntity>>> ExecuteQuery()
     {
         try
         {
             var result = await dbSet.ToListAsync();
-            return Result<List<TEntity>>.Success(SuccessType.Ok, result);
+            return AppResult<List<TEntity>>.Success(SuccessType.Ok, result);
         }
         catch (Exception ex)
         {
-            return Result<List<TEntity>>.Failure(new Error(ErrorType.ServerError, ex.Message));
+            return AppResult<List<TEntity>>.Failure(new AppError(ErrorType.ServerError, ex.Message));
         }
     }
 }

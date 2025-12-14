@@ -11,5 +11,5 @@ public interface IQueryBuilder<TEntity, in TId>
     IQueryBuilder<TEntity,TId> OrderBy<TKey>(Expression<Func<TEntity, TKey>> expression, bool ascending);
     IQueryBuilder<TEntity, TId> Where(Expression<Func<TEntity, bool>> predicate);
     IQueryBuilder<TEntity,TId> Take(int count);
-    Task<Result<List<TEntity>>> ExecuteQuery();
+    Task<AppResult<List<TEntity>>> ExecuteQuery();
 }

@@ -36,9 +36,9 @@ public class SessionTokenAuthenticationHandler(
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Name, userId),
-            new Claim(ClaimTypes.Role, role)
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Name, userId),
+            new(ClaimTypes.Role, role)
         };
 
         var identity = new ClaimsIdentity(claims, SessionTokenDefaults.AuthenticationScheme);
@@ -48,19 +48,19 @@ public class SessionTokenAuthenticationHandler(
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 
-    private bool TryValidateToken(string token, string secret, out string userId, out string role)
+    private bool TryValidateToken(string token, string secret, out string telegramChatId, out string role)
     {
-        userId = "";
+        telegramChatId = "";
         role = "";
 
         var parts = token.Split(':', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 3) return false;
 
-        userId = parts[0];
+        telegramChatId = parts[0];
         role = parts[1];
         var signature = parts[2];
 
-        var payload = $"{userId}:{role}";
+        var payload = $"{telegramChatId}:{role}";
         var expectedSignature = ComputeHmac(payload, secret);
 
         return signature == expectedSignature;

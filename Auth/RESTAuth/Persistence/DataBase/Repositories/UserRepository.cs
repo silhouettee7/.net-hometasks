@@ -7,7 +7,7 @@ namespace RESTAuth.Persistence.DataBase.Repositories;
 
 public class UserRepository(AppDbContext context) : Repository<User,Guid>(context), IUserRepository
 {
-    public async Task<Result<Dictionary<string, decimal>>> GetUserAverageSalariesByDepartment()
+    public async Task<AppResult<Dictionary<string, decimal>>> GetUserAverageSalariesByDepartment()
     {
         try
         {
@@ -19,24 +19,24 @@ public class UserRepository(AppDbContext context) : Repository<User,Guid>(contex
                     AverageSalary = g.Average(s => s.Salary)
                 })
                 .ToDictionaryAsync(k => k.Key, v => v.AverageSalary);
-            return Result<Dictionary<string, decimal>>.Success(SuccessType.Ok, result);
+            return AppResult<Dictionary<string, decimal>>.Success(SuccessType.Ok, result);
         }
         catch (Exception ex)
         {
-            return Result<Dictionary<string, decimal>>.Failure(new Error(ErrorType.ServerError, ex.Message));
+            return AppResult<Dictionary<string, decimal>>.Failure(new AppError(ErrorType.ServerError, ex.Message));
         }
     }
 
-    public async Task<Result<User>> GetUserByEmail(string email)
+    public async Task<AppResult<User>> GetUserByEmail(string email)
     {
         try
         {
             var user = await dbSet.SingleOrDefaultAsync(u => u.Email == email);
-            return Result<User>.Success(SuccessType.Ok, user);
+            return AppResult<User>.Success(SuccessType.Ok, user);
         }
         catch (Exception ex)
         {
-            return Result<User>.Failure(new Error(ErrorType.ServerError, ex.Message));
+            return AppResult<User>.Failure(new AppError(ErrorType.ServerError, ex.Message));
         }
     }
 
@@ -44,5 +44,18 @@ public class UserRepository(AppDbContext context) : Repository<User,Guid>(contex
     {
         await context.Users.AddRangeAsync(users);
         await context.SaveChangesAsync();
+    }
+
+    public async Task<List<UserReport>> GetAllUsers()
+    {
+        return await context.Users.Select(u => new UserReport
+        {
+            Name = u.Name,
+            Email = u.Email,
+            Salary = u.Salary,
+            Department = u.Department,
+            CreatedDate = u.CreatedDate,
+            UpdatedDate = u.UpdatedDate
+        }).ToListAsync();
     }
 }

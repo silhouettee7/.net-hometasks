@@ -9,7 +9,7 @@ public class InMemoryUserRepository(LocalStorage<User, Guid> storage) : InMemory
 {
     private ConcurrentDictionary<Guid, User> _users => _data;
 
-    public Task<Result<Dictionary<string, decimal>>> GetUserAverageSalariesByDepartment()
+    public Task<AppResult<Dictionary<string, decimal>>> GetUserAverageSalariesByDepartment()
     {
         try
         {
@@ -19,26 +19,31 @@ public class InMemoryUserRepository(LocalStorage<User, Guid> storage) : InMemory
                 .ToDictionary(group => group.Key,
                     group => group.Average(u => u.Salary));
             return Task.FromResult(
-                Result<Dictionary<string, decimal>>.Success(SuccessType.Ok, result));
+                AppResult<Dictionary<string, decimal>>.Success(SuccessType.Ok, result));
         }
         catch (Exception ex)
         {
             return Task.FromResult(
-                Result<Dictionary<string, decimal>>.Failure(new Error(ErrorType.ServerError, ex.Message)));
+                AppResult<Dictionary<string, decimal>>.Failure(new AppError(ErrorType.ServerError, ex.Message)));
         }
     }
 
-    public Task<Result<User>> GetUserByEmail(string email)
+    public Task<AppResult<User>> GetUserByEmail(string email)
     {
         var user = _users.FirstOrDefault(pair => pair.Value.Email == email).Value;
         if (user == null)
         {
-            return Task.FromResult(Result<User>.Failure(new Error(ErrorType.NotFound,"User not found")));
+            return Task.FromResult(AppResult<User>.Failure(new AppError(ErrorType.NotFound,"User not found")));
         }
-        return Task.FromResult(Result<User>.Success(SuccessType.Ok,user));
+        return Task.FromResult(AppResult<User>.Success(SuccessType.Ok,user));
     }
 
     public async Task CreateUsers(IEnumerable<User> users)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<UserReport>> GetAllUsers()
     {
         throw new NotImplementedException();
     }

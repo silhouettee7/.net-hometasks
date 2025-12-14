@@ -1,7 +1,5 @@
 namespace RESTAuth.Domain.Dtos;
 
-public class UserLoginDto
+public class UserLoginDto: AbstractLoginDto
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
 }

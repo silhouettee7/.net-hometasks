@@ -10,16 +10,18 @@ public class UserService(
     IUserRepository userRepository, 
     ICursorPaginationService<User,Guid> paginationService, 
     IQueryBuilder<User,Guid> queryBuilder,
+    IFileReportService fileReportService,
+    IFileStorageService fileStorageService,
     IConfiguration configuration): IUserService
 {
-    public async Task<Result> RegisterUser(UserDtoRequest dto)
+    public async Task<AppResult<Guid>> RegisterUser(UserDtoRequest dto)
     {
         try
         {
             var possibleUserResult = await userRepository.GetUserByEmail(dto.Email);
             if (!possibleUserResult.IsSuccess)
             {
-                return Result.Failure(new Error(ErrorType.BadRequest, "User already exists"));
+                return AppResult<Guid>.Failure(new AppError(ErrorType.BadRequest, "User already exists"));
             }
             var user = new User
             {
@@ -37,11 +39,11 @@ public class UserService(
         }
         catch (Exception ex)
         {
-            return Result.Failure(new Error(ErrorType.ServerError, ex.Message));
+            return AppResult<Guid>.Failure(new AppError(ErrorType.ServerError, ex.Message));
         }
     }
 
-    public async Task<Result> EditUser(Guid id, UserDtoRequest dto)
+    public async Task<AppResult> EditUser(Guid id, UserDtoRequest dto)
     {
         var result = await userRepository.GetEntityById(id);
         if (!result.IsSuccess)
@@ -63,13 +65,13 @@ public class UserService(
         return updateResult;
     }
 
-    public async Task<Result> DeleteUser(Guid id)
+    public async Task<AppResult> DeleteUser(Guid id)
     {
         var result = await userRepository.Delete(id);
         return result;
     }
 
-    public async Task<Result<CursorPaginationResponse<UserDtoResponse>>> GetUsersPageForPeriodByRegistrationDate(
+    public async Task<AppResult<CursorPaginationResponse<UserDtoResponse>>> GetUsersPageForPeriodByRegistrationDate(
         CursorPaginationRequest request, DateTime startDate, DateTime endDate)
     {
         startDate = startDate.ToUniversalTime();
@@ -79,7 +81,7 @@ public class UserService(
         return HandleUsersPaginationResult(result);
     }
 
-    public async Task<Result<CursorPaginationResponse<UserDtoResponse>>> GetUsersPageForPeriodByUpdatingDate(
+    public async Task<AppResult<CursorPaginationResponse<UserDtoResponse>>> GetUsersPageForPeriodByUpdatingDate(
         CursorPaginationRequest request, DateTime startDate, DateTime endDate)
     {
         startDate = startDate.ToUniversalTime();
@@ -88,15 +90,15 @@ public class UserService(
         var result = await paginationService.GetPageAsync(queryBuilder, request);
         return HandleUsersPaginationResult(result);
     }
-
-    public async Task<Result<List<DepartmentAverageSalaryDto>>> GetUserDepartmentAverageSalaries()
+    
+    public async Task<AppResult<List<DepartmentAverageSalaryDto>>> GetUserDepartmentAverageSalaries()
     {
         var result = await userRepository.GetUserAverageSalariesByDepartment();
         if (!result.IsSuccess)
         {
-            return Result<List<DepartmentAverageSalaryDto>>.Failure(result.Error!);
+            return AppResult<List<DepartmentAverageSalaryDto>>.Failure(result.AppError!);
         }
-        return Result<List<DepartmentAverageSalaryDto>>.Success(SuccessType.Ok, 
+        return AppResult<List<DepartmentAverageSalaryDto>>.Success(SuccessType.Ok, 
             result.Value!
                 .Select(pair => new DepartmentAverageSalaryDto 
                 {
@@ -106,14 +108,33 @@ public class UserService(
                 .ToList());
     }
 
-    private Result<CursorPaginationResponse<UserDtoResponse>> HandleUsersPaginationResult(
-        Result<CursorPaginationResponse<User>> result)
+    public async Task<AppResult<string>> GenerateReportOnUsersAndReturnLink(Guid reportId)
     {
-        if (!result.IsSuccess)
+        try
         {
-            return Result<CursorPaginationResponse<UserDtoResponse>>.Failure(result.Error!);
+            var users = await userRepository.GetAllUsers();
+            var fileReport = fileReportService.CreateFileReport(reportId, users);
+            await fileStorageService.UploadFileAsync(fileReport.FileName, fileReport.Content,
+                fileReport.ContentType);
+            var link = await fileStorageService.GetFileLinkAsync(fileReport.FileName);
+            await Task.Delay(3000); //искусственная задержка
+            return AppResult<string>.Success(SuccessType.Ok, link);
         }
-        var users = result.Value!.Items
+        catch (Exception ex)
+        {
+            return AppResult<string>.Failure(
+                new AppError(ErrorType.ServerError, "Не удалось сгенерировать отчет"));
+        }
+    }
+
+    private AppResult<CursorPaginationResponse<UserDtoResponse>> HandleUsersPaginationResult(
+        AppResult<CursorPaginationResponse<User>> appResult)
+    {
+        if (!appResult.IsSuccess)
+        {
+            return AppResult<CursorPaginationResponse<UserDtoResponse>>.Failure(appResult.AppError!);
+        }
+        var users = appResult.Value!.Items
             .Select(u => new UserDtoResponse
             {
                 CreatedDate = u.CreatedDate,
@@ -126,11 +147,11 @@ public class UserService(
         var paginationResult = new CursorPaginationResponse<UserDtoResponse>()
         {
             Items = users,
-            HasNext = result.Value.HasNext,
-            HasPrevious = result.Value.HasPrevious,
-            NextCursor = result.Value.NextCursor,
-            PreviousCursor = result.Value.PreviousCursor
+            HasNext = appResult.Value.HasNext,
+            HasPrevious = appResult.Value.HasPrevious,
+            NextCursor = appResult.Value.NextCursor,
+            PreviousCursor = appResult.Value.PreviousCursor
         };
-        return Result<CursorPaginationResponse<UserDtoResponse>>.Success(SuccessType.Ok,paginationResult);
+        return AppResult<CursorPaginationResponse<UserDtoResponse>>.Success(SuccessType.Ok,paginationResult);
     }
 }

@@ -5,7 +5,8 @@ namespace RESTAuth.Domain.Abstractions.Repositories;
 
 public interface IUserRepository: IRepository<User, Guid>
 {
-    Task<Result<Dictionary<string,decimal>>> GetUserAverageSalariesByDepartment();
-    Task<Result<User>> GetUserByEmail(string email);
+    Task<AppResult<Dictionary<string,decimal>>> GetUserAverageSalariesByDepartment();
+    Task<AppResult<User>> GetUserByEmail(string email);
     Task CreateUsers(IEnumerable<User> users);
+    Task<List<UserReport>> GetAllUsers();
 }

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: auth-postgres
+    environment:
+      POSTGRES_DB: NET3course
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+    ports:
+      - "5555:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
+  minio:
+    image: minio/minio
+    container_name: auth-minio
+    ports:
+      - "9003:9000"
+      - "9004:9001"
+    environment:
+      MINIO_ROOT_USER: RJYwhPEf7O1DbRu5SvtF
+      MINIO_ROOT_PASSWORD: tLRHkGHBm105Nn8zGwVEEHmmGAchxkcbvINe7wjw
+    volumes:
+      - minio_data:/data
+    command: server  /data --console-address ":9001"
+    
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: auth-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672" 
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  minio_data:
+    driver: local

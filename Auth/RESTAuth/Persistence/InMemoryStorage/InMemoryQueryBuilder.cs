@@ -30,15 +30,15 @@ public class InMemoryQueryBuilder<TEntity, TId>(LocalStorage<TEntity,TId> storag
         return this;
     }
 
-    public Task<Result<List<TEntity>>> ExecuteQuery()
+    public Task<AppResult<List<TEntity>>> ExecuteQuery()
     {
         try
         {
-            return Task.FromResult(Result<List<TEntity>>.Success(SuccessType.Ok, _query.ToList()));
+            return Task.FromResult(AppResult<List<TEntity>>.Success(SuccessType.Ok, _query.ToList()));
         }
         catch (Exception ex)
         {
-            return Task.FromResult(Result<List<TEntity>>.Failure(new Error(ErrorType.ServerError, ex.Message)));
+            return Task.FromResult(AppResult<List<TEntity>>.Failure(new AppError(ErrorType.ServerError, ex.Message)));
         }
     }
 }

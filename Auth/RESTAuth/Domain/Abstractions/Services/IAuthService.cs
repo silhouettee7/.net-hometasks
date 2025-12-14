@@ -5,5 +5,12 @@ namespace RESTAuth.Domain.Abstractions.Services;
 
 public interface IAuthService
 {
-    Task<Result<LoginResult>> Login(UserLoginDto dto);
+    Task<AppResult<LoginResult>> Login(UserLoginDto dto);
+    Task<AppResult<TelegramLoginResult>> Login(TelegramLoginDto dto);
+}
+
+public class TelegramLoginResult
+{
+    public long TelegramChatId { get; set; }
+    public string Role { get; set; }
 }

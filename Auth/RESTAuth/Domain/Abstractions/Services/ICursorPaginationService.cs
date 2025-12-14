@@ -9,5 +9,5 @@ public interface ICursorPaginationService<TEntity,TId>
     where TEntity : Entity<TId> 
     where TId : struct, IComparable<TId>
 {
-    Task<Result<CursorPaginationResponse<TEntity>>> GetPageAsync(IQueryBuilder<TEntity,TId> queryBuilder,CursorPaginationRequest request);
+    Task<AppResult<CursorPaginationResponse<TEntity>>> GetPageAsync(IQueryBuilder<TEntity,TId> queryBuilder,CursorPaginationRequest request);
 }

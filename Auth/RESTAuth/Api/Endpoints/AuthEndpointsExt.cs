@@ -38,7 +38,7 @@ public static class AuthEndpointsExt
             .AddEndpointFilter<ValidationFilter<UserLoginDto>>();
 
         group.MapPost("/telegram/login",
-            async (UserLoginDto dto, IAuthService authService,
+            async (TelegramLoginDto dto, IAuthService authService,
                 HttpResponseConvertingUtil converter, IConfiguration config) =>
             {
                 var result = await authService.Login(dto);
@@ -48,16 +48,17 @@ public static class AuthEndpointsExt
                 }
                 var secretKey = config["Auth:Secret"];
 
-                var userId = result.Value.Id.ToString();
+                var telegramChatId = result.Value.TelegramChatId.ToString();
                 var role = result.Value.Role;
 
-                var payload = $"{userId}:{role}";
+                var payload = $"{telegramChatId}:{role}";
                 var signature = ComputeHmac(payload, secretKey!);
 
-                var token = $"{userId}:{role}:{signature}";
+                var token = $"{telegramChatId}:{role}:{signature}";
                 
                 return Results.Ok(new { token });
             });
+        
         return group;
     }
     static string ComputeHmac(string data, string secret)

@@ -12,14 +12,14 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
     where TEntity : Entity<TId> 
     where TId : struct, IComparable<TId>
 {
-    public async Task<Result<CursorPaginationResponse<TEntity>>> GetPageAsync(IQueryBuilder<TEntity,TId> queryBuilder, CursorPaginationRequest request)
+    public async Task<AppResult<CursorPaginationResponse<TEntity>>> GetPageAsync(IQueryBuilder<TEntity,TId> queryBuilder, CursorPaginationRequest request)
     {
         return request.Cursor == null 
             ? await HandleFirstPage(request, queryBuilder)
             : await HandleOtherPage(request, queryBuilder);
     }
     
-    private async Task<Result<CursorPaginationResponse<TEntity>>> HandleFirstPage(
+    private async Task<AppResult<CursorPaginationResponse<TEntity>>> HandleFirstPage(
         CursorPaginationRequest request, IQueryBuilder<TEntity,TId> queryBuilder)
     {
         var dataResult = await queryBuilder
@@ -28,7 +28,7 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
             .ExecuteQuery();
         if (!dataResult.IsSuccess)
         {
-            return Result<CursorPaginationResponse<TEntity>>.Failure(dataResult.Error!);
+            return AppResult<CursorPaginationResponse<TEntity>>.Failure(dataResult.AppError!);
         }
         var entities = dataResult.Value!;
         var additionalElem = entities
@@ -42,7 +42,7 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
         };
         if (additionalElem is null)
         {
-            return Result<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
+            return AppResult<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
         }
         if (request.Forward)
         {
@@ -54,10 +54,10 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
             response.HasPrevious = true;
             response.PreviousCursor = EncodeCursor(new Cursor {Id = additionalElem.Id});
         }
-        return Result<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
+        return AppResult<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
     }
 
-    private async Task<Result<CursorPaginationResponse<TEntity>>> HandleOtherPage(
+    private async Task<AppResult<CursorPaginationResponse<TEntity>>> HandleOtherPage(
         CursorPaginationRequest request, IQueryBuilder<TEntity,TId> queryBuilder)
     {
         queryBuilder.OrderBy(x => x.Id, true);
@@ -79,7 +79,7 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
             .ExecuteQuery();
         if (!dataResult.IsSuccess)
         {
-            return Result<CursorPaginationResponse<TEntity>>.Failure(dataResult.Error!);
+            return AppResult<CursorPaginationResponse<TEntity>>.Failure(dataResult.AppError!);
         }
         var entities = dataResult.Value!;
         var additionalElem = entities
@@ -106,7 +106,7 @@ public class CursorPaginationService<TEntity, TId>: ICursorPaginationService<TEn
             response.PreviousCursor = response.HasPrevious ? EncodeCursor(new Cursor { Id = additionalElem!.Id }) : null;
         }
 
-        return Result<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
+        return AppResult<CursorPaginationResponse<TEntity>>.Success(SuccessType.Ok, response);
     }
     
     private Cursor DecodeCursor(string cursor)
